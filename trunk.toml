@@ -1,0 +1,15 @@
+# template/Trunk.toml
+version = "0.1"
+
+[build]
+# The index HTML file to drive the bundling process.
+target = "index.html"
+
+# Build in release mode.
+release = false
+
+# The output dir for all final assets.
+dist = "docs"
+
+# Whether to include hash values in the output file names.
+filehash = true
