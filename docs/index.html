@@ -1,6 +1,16 @@
-<html><head>
-    
-  
-<link rel="preload" href="/playing_with_bevy_and_blender-47feb7e9b0cdb44e_bg.wasm" as="fetch" type="application/wasm" crossorigin="">
-<link rel="modulepreload" href="/playing_with_bevy_and_blender-47feb7e9b0cdb44e.js"></head>
-<body><script type="module">import init from '/playing_with_bevy_and_blender-47feb7e9b0cdb44e.js';init('/playing_with_bevy_and_blender-47feb7e9b0cdb44e_bg.wasm');</script></body></html>
+<!doctype html>
+<html lang="en">
+
+<body style="margin: 0px;">
+  <script type="module">
+    import init from './card_game.js'
+
+    init().catch((error) => {
+      if (!error.message.startsWith("Using exceptions for control flow, don't mind me. This isn't actually an error!")) {
+        throw error;
+      }
+    });
+  </script>
+</body>
+
+</html>

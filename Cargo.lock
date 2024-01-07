@@ -2801,6 +2801,7 @@ dependencies = [
  "bevy",
  "bevy_mod_picking",
  "stl_io",
+ "wasm-bindgen",
 ]
 
 [[package]]
