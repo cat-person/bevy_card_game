@@ -41,7 +41,14 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut materials: 
         ..Default::default()
     };
 
-    commands.spawn((card_bundle, PickableBundle::default()));
+    commands.spawn((
+        card_bundle, 
+        On::<Pointer<Drag>>::target_component_mut::<Transform>(|drag, transform| {
+            println!("{}", drag.delta);
+            transform.translation.x += drag.delta.x / 1500.0;
+            transform.translation.z += drag.delta.y / 1000.0;
+        })
+    ));
 }
 
 fn keyboard_input(
