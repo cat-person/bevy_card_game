@@ -1,9 +1,3 @@
-//! Create a custom material to draw basic lines in 3D
-
-// mod color_material_3d;
-// use color_material_3d::ColorMaterial3dPlugin;
-// use color_material_3d::ColorMaterial3d;
-
 use bevy::prelude::*;
 use line_plugin::{LinePlugin, CastRayEvent};
 
@@ -37,8 +31,6 @@ fn cusrsor_movement_handler(
         let Some(ray) = camera.viewport_to_world(camera_transform, ev.position) else {
             return;
         };
-        // println!("Ray: origin: {origin} => direction: {direction}", origin = ray.origin, direction = ray.direction);
-
         raycast_event_writer.send(CastRayEvent::new(ray));
     }
 }
