@@ -1,4 +1,5 @@
 pub mod events;
+pub mod pojo;
 
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
