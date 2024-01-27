@@ -11,11 +11,10 @@ use bevy::{
     render::{mesh::Mesh, render_resource::PrimitiveTopology}, pbr::{MaterialMeshBundle, MaterialPlugin}, transform::components::Transform, utils::default, math::{Vec3, Ray},
 };
 
-use bvh::{aabb::{AABB, Bounded}, Point3, Vector3};
-use bvh::bounding_hierarchy::BHShape;
-use bvh::bvh::BVH;
-use bvh::ray::Ray as BvhRay;
-// use nalgebra::{Point3, Vector3};
+// use bvh::{aabb::{AABB, Bounded}, Point3, Vector3};
+// use bvh::bounding_hierarchy::BHShape;
+// use bvh::bvh::BVH;
+// use bvh::ray::Ray as BvhRay;
 
 use self::{material::LineMaterial, ray_mesh::CameraRay, pickable::Pickable};
 
@@ -61,17 +60,6 @@ impl From<Line> for Mesh {
     }
 }
 
-#[derive(Event)]
-pub struct CastRayEvent {
-    ray: Ray,
-}
-
-impl CastRayEvent {
-    pub fn new(ray: Ray) -> Self {
-        Self { ray }
-    }
-}
-
 fn cast_ray(
     mut cast_ray_event_reader: EventReader<CastRayEvent>,
     mut pickable_query: Query<(&Pickable, &Transform)>,
@@ -84,20 +72,14 @@ fn cast_ray(
         // println!("cast_ray_event {coords}", coords = ev.mouse_coordinates);
         // ray_query.get_single_mut().unwrap().1.look_at(ev.ray.direction, Vec3::NEG_Z);
 
-        let mut shapes = Vec::new();
+        // let bvh = BVH::build(&mut shapes);
+        // let aaa = bvh.traverse(&BvhRay::new(
+        //     Point3 { x: 0., y: 0., z: 0.  }, 
+        //     Vector3 { x: 0., y: 0.0, z: -1. }), &shapes);
 
-        for (pickable, transform) in pickable_query.into_iter(){
-            shapes.push(pickable.cast_shape);
-        }
-
-        let bvh = BVH::build(&mut shapes);
-        let aaa = bvh.traverse(&BvhRay::new(
-            Point3 { x: 0., y: 0., z: 0.  }, 
-            Vector3 { x: 0., y: 0.0, z: -1. }), &shapes);
-
-        for aa in aaa.iter() {
-            println!("{}", aa.node_index);
-        }
+        // for aa in aaa.iter() {
+        //     println!("{}", aa.node_index);
+        // }
     }
 }
 
@@ -120,66 +102,3 @@ fn create_ray(
         }
     ));
 }
-
-#[derive(Default, Clone, Copy)]
-struct CastShape {
-    node_index: usize,
-
-}
-
-impl Bounded for CastShape {
-    fn aabb(&self) -> AABB {
-        AABB::with_bounds(Vector3::ZERO, Vector3::new(1., 1., 1.))
-    }
-}
-
-impl BHShape for CastShape {
-    fn set_bh_node_index(&mut self, given_node_index: usize) {
-        self.node_index = given_node_index;
-    }
-
-    fn bh_node_index(&self) -> usize {
-        self.node_index
-    }
-}
-
-// impl From<Mesh> for BHShape {
-//     fn from(value: Mesh) -> Self {
-        
-//     }
-// }
-
-// struct Sphere {
-//     position: Point3<f32>,
-//     radius: f32,
-//     node_index: usize,
-// }
-
-// impl Bounded<f32, 3> for Sphere {
-//     fn aabb(&self) -> Aabb<f32, 3> {
-//         let half_size = Vector3::new(self.radius, self.radius, self.radius);
-//         let min = self.position - half_size;
-//         let max = self.position + half_size;
-//         Aabb::with_bounds(min, max)
-//     }
-// }
-
-// impl BHShape<f32, 3> for Sphere {
-//     fn set_bh_node_index(&mut self, index: usize) {
-//         self.node_index = index;
-//     }
-//     fn bh_node_index(&self) -> usize {
-//         self.node_index
-//     }
-// }
-
-// let mut spheres = Vec::new();
-// for i in 0..1000u32 {
-//     let position = Point3::new(i as f32, i as f32, i as f32);
-//     let radius = (i % 10) as f32 + 1.0;
-//     spheres.push(Sphere {
-//         position: position,
-//         radius: radius,
-//         node_index: 0,
-//     });
-// }
