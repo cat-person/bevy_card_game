@@ -1,6 +1,6 @@
 use bevy::{core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping}, ecs::entity, prelude::*};
 use bevy_mod_raycast::prelude::*;
-use drag_and_drop::{events::{CastRayEvent, CastResult}, pojo::Pickable, DragAndDropPlugin};
+use drag_and_drop::{events::Grab, pojo::{Draggable, HighlightedDraggable}, DragAndDropPlugin};
 use stl_loader_plugin::StlLoaderPlugin;
 
 mod stl_loader_plugin;
@@ -11,7 +11,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(bevy_mod_raycast::low_latency_window_plugin()))
         .add_plugins((DefaultRaycastingPlugin, StlLoaderPlugin, DragAndDropPlugin))
         .add_systems(Startup, (setup, setup_camera))
-        .add_systems(Update, cast_ray)
+        .add_systems(Update, (cast_ray, handle_mouse_input))
         .run();
 }
 
@@ -36,7 +36,7 @@ fn setup(mut commands: Commands,
             }),
             transform: Transform::from_xyz(0.0, 0.0, -1.0),
             ..Default::default()
-        }, Pickable::default()));
+        }, Draggable::default()));
 
     commands.spawn((PbrBundle {
         mesh: asset_server.load("card.stl"),
@@ -46,7 +46,7 @@ fn setup(mut commands: Commands,
         }),
         transform: Transform::from_xyz(0.2, 0.0, -1.0),
         ..Default::default()
-    }, Pickable::default()));
+    }, Draggable::default()));
 
     commands.spawn((PbrBundle {
         mesh: asset_server.load("card.stl"),
@@ -57,7 +57,7 @@ fn setup(mut commands: Commands,
         }),
         transform: Transform::from_xyz(-0.2, 0.0, -1.0),
         ..Default::default()
-    }, Pickable::default()));
+    }, Draggable::default()));
 }
 
 fn setup_camera(mut commands: Commands) {
@@ -79,23 +79,44 @@ fn setup_camera(mut commands: Commands) {
 }
 
 fn cast_ray(
-    mut ray_result_event_reader: EventReader<CastResult>,
-    pickable_entities_q: Query<(Entity, &Handle<StandardMaterial>), With<Pickable>>,
+    pickable_entities_q: Query<(&Handle<StandardMaterial>, Option<&HighlightedDraggable>), With<Draggable>>,
     mut materials: ResMut<Assets<StandardMaterial>> ) {
 
-    for (_, color_handle) in pickable_entities_q.iter(){
+    for (color_handle, highlighted) in pickable_entities_q.iter(){
         let color = materials.get_mut(color_handle).unwrap();
-        color.base_color = Color::BLACK;
-        color.emissive = Color::BLACK;
+        if let Some(_) = highlighted {
+            color.base_color = Color::BLACK;
+            color.emissive = Color::PURPLE;
+        } else {
+            color.base_color = Color::BLACK;
+            color.emissive = Color::BLACK;    
+        }
+        
     }
+}
 
-    for cast_event in ray_result_event_reader.read() {
-        for (entity, color_handle) in pickable_entities_q.iter(){
-            if(entity == cast_event.entity) {
-                let color = materials.get_mut(color_handle).unwrap();
-                color.base_color = Color::BEIGE;
-                color.emissive = Color::GREEN;
-            }            
-        }    
+fn handle_mouse_input(
+    buttons: Res<Input<MouseButton>>,
+    highlighted_draggable: Query<(Entity, &Transform), With<HighlightedDraggable>>,
+    mut grab_ew: EventWriter<Grab>,
+) {
+    if buttons.just_pressed(MouseButton::Left) {
+        if !highlighted_draggable.is_empty() {
+            let (entity, transform) = highlighted_draggable.single();
+            grab_ew.send(Grab {
+                entity,
+                origin: transform.translation
+            })
+        }
+    }
+    if buttons.just_released(MouseButton::Left) {
+        // Left Button was released
+    }
+    if buttons.pressed(MouseButton::Right) {
+        // Right Button is being held down
+    }
+    // we can check multiple at once with `.any_*`
+    if buttons.any_just_pressed([MouseButton::Left, MouseButton::Right]) {
+        // Either the left or the right button was just pressed
     }
 }

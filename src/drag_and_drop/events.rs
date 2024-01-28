@@ -1,6 +1,6 @@
 use bevy::{
     ecs::{ entity::Entity, event::Event },
-    math::Ray,
+    math::{Ray, Vec3},
 };
 
 #[derive(Event)]
@@ -15,12 +15,7 @@ impl CastRayEvent {
 }
 
 #[derive(Event)]
-pub struct CastResult {
+pub struct Grab {
     pub entity: Entity,
+    pub origin: Vec3
 }
-
-// impl CastResult {
-//     pub fn new(entities: [(Entity, IntersectionData)]) -> Self {
-//         Self { entities }
-//     }
-// }
