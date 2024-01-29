@@ -1,6 +1,6 @@
 use bevy::{
     ecs::{ entity::Entity, event::Event },
-    math::{Ray, Vec3},
+    math::{Ray, Vec2, Vec3},
 };
 
 #[derive(Event)]
@@ -23,7 +23,7 @@ pub struct Grab {
 #[derive(Event)]
 pub struct Drag {
     pub entity: Entity,
-    pub delta: Vec3,
+    pub cursor_position: Vec2,
     pub origin: Vec3
 }
 

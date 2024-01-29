@@ -1,4 +1,4 @@
-use bevy::{core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping}, ecs::entity, input::mouse::MouseMotion, prelude::*, window::PrimaryWindow};
+use bevy::{core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping}, input::mouse::MouseMotion, prelude::*, window::PrimaryWindow};
 use bevy_mod_raycast::prelude::*;
 use drag_and_drop::{events::{Drag, Grab, Drop}, pojo::{Draggable, Grabbed, HighlightedDraggable}, DragAndDropPlugin};
 use stl_loader_plugin::StlLoaderPlugin;
@@ -19,7 +19,6 @@ fn setup(mut commands: Commands,
     asset_server: Res<AssetServer>, 
     mut materials: ResMut<Assets<StandardMaterial>>) {
 
-    // commands.spawn((Camera3dBundle::default(), BloomSettings::default()));
     commands.spawn(PointLightBundle{ 
         point_light: PointLight {
             intensity: 0.1,
@@ -117,34 +116,28 @@ fn handle_mouse_input(
             ew_drop.send(Drop { entity: entity, origin: transform.translation })
         }
     }
-    // if buttons.pressed(MouseButton::Right) {
-    //     // Right Button is being held down
-    // }
-    // // we can check multiple at once with `.any_*`
-    // if buttons.any_just_pressed([MouseButton::Left, MouseButton::Right]) {
-    //     // Either the left or the right button was just pressed
-    // }
 }
 
 
 fn handle_mouse_motion(
-    mut motion_evr: EventReader<MouseMotion>,
-    mut drag_evw: EventWriter<Drag>,
-    q_grabbed: Query<Entity, With<Grabbed>>,
+    mut evr_motion: EventReader<MouseMotion>,
+    mut evw_drag: EventWriter<Drag>,
+    q_grabbed: Query<(Entity, &Grabbed)>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
 ) {
     if q_grabbed.is_empty() {
         return;
     }
 
-    if let grabbed = q_grabbed.single() {
-        if let Some(position) = q_windows.single().cursor_position() {
-            
-
-            
-            // println!("Cursor is inside the primary window, at {:?} | {:?}", grabbed, position);
+    if let (entity, grabbed) = q_grabbed.single() {
+        if let Some(cursor_position) = q_windows.single().cursor_position() {
+            evw_drag.send(Drag{
+                entity,
+                cursor_position,
+                origin: grabbed.origin,
+            })
         } else {
-            // println!("Cursor is not in the game window.");
+            println!("Cursor is not in the game window.");
         }
     }
     
