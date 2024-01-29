@@ -112,7 +112,8 @@ fn handle_mouse_input(
         }
     }
     if buttons.just_released(MouseButton::Left) {
-        if let (entity, transform) = q_grabbed.single(){
+        if !q_grabbed.is_empty() {
+            let (entity, transform) = q_grabbed.single();
             ew_drop.send(Drop { entity: entity, origin: transform.translation })
         }
     }

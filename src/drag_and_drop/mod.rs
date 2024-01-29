@@ -4,6 +4,8 @@ pub mod pojo;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 
+use crate::drag_and_drop::pojo::{Dragged, Dropped};
+
 use self::{events::{Grab, Drag, Drop}, pojo::{Draggable, Grabbed, HighlightedDraggable}};
 
 
@@ -52,8 +54,8 @@ fn handle_grab(mut commands: Commands,
 fn handle_drag(mut commands: Commands,
     mut er_drag: EventReader<Drag> ) {
     if let Some(e_drag) = er_drag.read().last() {
-        commands.entity(e_drag.entity).remove::<HighlightedDraggable>()
-            .insert(Grabbed { origin: e_drag.origin });
+        commands.entity(e_drag.entity).remove::<Grabbed>()
+            .insert(Dragged { origin: e_drag.origin });
 
         println!("{:?} Dragged", e_drag.entity);
     }
@@ -62,8 +64,10 @@ fn handle_drag(mut commands: Commands,
 fn handle_drop(mut commands: Commands,
     mut er_drop: EventReader<Drop> ) {
     if let Some(e_drop) = er_drop.read().last() {
-        commands.entity(e_drop.entity).remove::<HighlightedDraggable>()
-            .insert(Grabbed { origin: e_drop.origin });
+        commands.entity(e_drop.entity)
+            .remove::<Grabbed>()
+            .remove::<Dragged>()
+            .insert(Dropped { destination: e_drop.origin });
 
         println!("{:?} Dropped", e_drop.entity);
     }
