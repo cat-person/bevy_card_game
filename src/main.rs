@@ -1,6 +1,6 @@
-use bevy::{core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping}, ecs::entity, prelude::*};
+use bevy::{core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping}, ecs::entity, input::mouse::MouseMotion, prelude::*, window::PrimaryWindow};
 use bevy_mod_raycast::prelude::*;
-use drag_and_drop::{events::Grab, pojo::{Draggable, HighlightedDraggable}, DragAndDropPlugin};
+use drag_and_drop::{events::{Drag, Grab, Drop}, pojo::{Draggable, Grabbed, HighlightedDraggable}, DragAndDropPlugin};
 use stl_loader_plugin::StlLoaderPlugin;
 
 mod stl_loader_plugin;
@@ -11,7 +11,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(bevy_mod_raycast::low_latency_window_plugin()))
         .add_plugins((DefaultRaycastingPlugin, StlLoaderPlugin, DragAndDropPlugin))
         .add_systems(Startup, (setup, setup_camera))
-        .add_systems(Update, (cast_ray, handle_mouse_input))
+        .add_systems(Update, (cast_ray, handle_mouse_input, handle_mouse_motion))
         .run();
 }
 
@@ -97,26 +97,54 @@ fn cast_ray(
 
 fn handle_mouse_input(
     buttons: Res<Input<MouseButton>>,
-    highlighted_draggable: Query<(Entity, &Transform), With<HighlightedDraggable>>,
-    mut grab_ew: EventWriter<Grab>,
+    q_highlighted_draggable: Query<(Entity, &Transform), With<HighlightedDraggable>>,
+    q_grabbed: Query<(Entity, &Transform), With<Grabbed>>,
+    mut ew_grab: EventWriter<Grab>,
+    mut ew_drop: EventWriter<Drop>
 ) {
     if buttons.just_pressed(MouseButton::Left) {
-        if !highlighted_draggable.is_empty() {
-            let (entity, transform) = highlighted_draggable.single();
-            grab_ew.send(Grab {
+        if !q_highlighted_draggable.is_empty() {
+            let (entity, transform) = q_highlighted_draggable.single();
+            ew_grab.send(Grab {
                 entity,
                 origin: transform.translation
             })
         }
     }
     if buttons.just_released(MouseButton::Left) {
-        // Left Button was released
+        if let (entity, transform) = q_grabbed.single(){
+            ew_drop.send(Drop { entity: entity, origin: transform.translation })
+        }
     }
-    if buttons.pressed(MouseButton::Right) {
-        // Right Button is being held down
+    // if buttons.pressed(MouseButton::Right) {
+    //     // Right Button is being held down
+    // }
+    // // we can check multiple at once with `.any_*`
+    // if buttons.any_just_pressed([MouseButton::Left, MouseButton::Right]) {
+    //     // Either the left or the right button was just pressed
+    // }
+}
+
+
+fn handle_mouse_motion(
+    mut motion_evr: EventReader<MouseMotion>,
+    mut drag_evw: EventWriter<Drag>,
+    q_grabbed: Query<Entity, With<Grabbed>>,
+    q_windows: Query<&Window, With<PrimaryWindow>>,
+) {
+    if q_grabbed.is_empty() {
+        return;
     }
-    // we can check multiple at once with `.any_*`
-    if buttons.any_just_pressed([MouseButton::Left, MouseButton::Right]) {
-        // Either the left or the right button was just pressed
+
+    if let grabbed = q_grabbed.single() {
+        if let Some(position) = q_windows.single().cursor_position() {
+            
+
+            
+            // println!("Cursor is inside the primary window, at {:?} | {:?}", grabbed, position);
+        } else {
+            // println!("Cursor is not in the game window.");
+        }
     }
+    
 }

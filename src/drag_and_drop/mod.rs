@@ -4,7 +4,7 @@ pub mod pojo;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 
-use self::{events::Grab, pojo::{Draggable, Dragged, HighlightedDraggable}};
+use self::{events::{Grab, Drag, Drop}, pojo::{Draggable, Grabbed, HighlightedDraggable}};
 
 
 #[derive(Default)]
@@ -14,11 +14,13 @@ impl Plugin for DragAndDropPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_event::<Grab>()
-            .add_systems(Update, (cast_ray, handle_grab));
+            .add_event::<Drag>()
+            .add_event::<Drop>()
+            .add_systems(Update, (handle_cast_ray, handle_grab, handle_drag, handle_drop));
     }
 }
 
-fn cast_ray(
+fn handle_cast_ray(
     mut commands: Commands,
     cursor_ray: Res<CursorRay>, 
     mut raycast: Raycast,
@@ -38,11 +40,31 @@ fn cast_ray(
 }
 
 fn handle_grab(mut commands: Commands,
-    mut grab_er: EventReader<Grab> ) {
-    if let Some(grab_e) = grab_er.read().last() {
-        commands.entity(grab_e.entity).remove::<HighlightedDraggable>()
-            .insert(Dragged { origin: grab_e.origin });
+    mut er_grab: EventReader<Grab> ) {
+    if let Some(e_drop) = er_grab.read().last() {
+        commands.entity(e_drop.entity).remove::<HighlightedDraggable>()
+            .insert(Grabbed { origin: e_drop.origin });
 
-        println!("{:?} grabbed", grab_e.entity);
+        println!("{:?} Grabbed", e_drop.entity);
+    }
+}
+
+fn handle_drag(mut commands: Commands,
+    mut er_drag: EventReader<Drag> ) {
+    if let Some(e_drag) = er_drag.read().last() {
+        commands.entity(e_drag.entity).remove::<HighlightedDraggable>()
+            .insert(Grabbed { origin: e_drag.origin });
+
+        println!("{:?} Dragged", e_drag.entity);
+    }
+}
+
+fn handle_drop(mut commands: Commands,
+    mut er_drop: EventReader<Drop> ) {
+    if let Some(e_drop) = er_drop.read().last() {
+        commands.entity(e_drop.entity).remove::<HighlightedDraggable>()
+            .insert(Grabbed { origin: e_drop.origin });
+
+        println!("{:?} Dropped", e_drop.entity);
     }
 }

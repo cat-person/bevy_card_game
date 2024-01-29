@@ -11,8 +11,13 @@ pub struct HighlightedDraggable {
 }
 
 #[derive(Component, Default)]
-pub struct Dragged {
+pub struct Grabbed {
     pub origin: Vec3 // original coordinates
+}
+
+#[derive(Component, Default)]
+pub struct Dragged {
+    pub origin: Vec3
 }
 
 #[derive(Component, Default)]
