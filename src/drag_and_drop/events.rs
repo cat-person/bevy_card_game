@@ -8,12 +8,6 @@ pub struct CastRayEvent {
     ray: Ray,
 }
 
-impl CastRayEvent {
-    pub fn new(ray: Ray) -> Self {
-        Self { ray }
-    }
-}
-
 #[derive(Event)]
 pub struct Grab {
     pub entity: Entity,

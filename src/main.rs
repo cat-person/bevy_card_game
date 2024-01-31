@@ -1,4 +1,4 @@
-use bevy::{core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping}, input::mouse::MouseMotion, prelude::*, window::PrimaryWindow};
+use bevy::{core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping}, prelude::*, window::PrimaryWindow};
 use bevy_mod_raycast::prelude::*;
 use drag_and_drop::{events::{Drag, Grab, Drop}, pojo::{Draggable, Grabbed, HighlightedDraggable}, DragAndDropPlugin};
 use stl_loader_plugin::StlLoaderPlugin;
@@ -120,7 +120,6 @@ fn handle_mouse_input(
 
 
 fn handle_mouse_motion(
-    mut evr_motion: EventReader<MouseMotion>,
     mut evw_drag: EventWriter<Drag>,
     q_grabbed: Query<(Entity, &Grabbed)>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
@@ -129,16 +128,14 @@ fn handle_mouse_motion(
         return;
     }
 
-    if let (entity, grabbed) = q_grabbed.single() {
-        if let Some(cursor_position) = q_windows.single().cursor_position() {
-            evw_drag.send(Drag{
-                entity,
-                cursor_position,
-                origin: grabbed.origin,
-            })
-        } else {
-            println!("Cursor is not in the game window.");
-        }
-    }
-    
+    let (entity, grabbed) = q_grabbed.single();
+    if let Some(cursor_position) = q_windows.single().cursor_position() {
+        evw_drag.send(Drag{
+            entity,
+            cursor_position,
+            origin: grabbed.origin,
+        })
+    } else {
+        println!("Cursor is not in the game window.");
+    }    
 }

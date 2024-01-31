@@ -1,7 +1,7 @@
 pub mod events;
 pub mod pojo;
 
-use bevy::{ecs::entity, prelude::*, transform};
+use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 
 use self::{events::{Grab, Drag, Drop}, pojo::{Draggable, Grabbed, HighlightedDraggable, Dropped}};
@@ -49,31 +49,26 @@ fn handle_grab(mut commands: Commands,
     }
 }
 
-fn handle_drag(mut commands: Commands,
+fn handle_drag(
     cursor_ray: Res<CursorRay>, 
     meshes: ResMut<Assets<Mesh>>,
-    mut q_grabbed: Query<(&Handle<Mesh>, &mut Transform), With<Grabbed>>,
-    mut er_drag: EventReader<Drag> ) {
-    if let Some(e_drag) = er_drag.read().last() {
+    mut q_grabbed: Query<(&Handle<Mesh>, &mut Transform), With<Grabbed>>) {
 
-        if let (mesh, mut transform) = q_grabbed.single_mut(){
-            if let Some(cursor_ray) = cursor_ray.0 {
-                if let Some(intersection) = ray_intersection_over_mesh(
-                meshes.get(mesh).unwrap(),
-        &transform.compute_matrix(), 
-                        &cursor_ray, 
-                        Backfaces::Include) { // The hell is Backfaces ?
-                    
+    if q_grabbed.is_empty() {
+        return;
+    }
 
-                    transform.translation = intersection.position();
-                    println!("MEOW");
+    let (mesh, mut transform) = q_grabbed.single_mut();
+    if let Some(cursor_ray) = cursor_ray.0 {
+        if let Some(intersection) = ray_intersection_over_mesh(
+        meshes.get(mesh).unwrap(),
+&transform.compute_matrix(), 
+                &cursor_ray, 
+                Backfaces::Include) { // The hell is Backfaces ?
+            
 
-                }
-                // let entities = raycast.cast_ray(cursor_ray, &default());
-            }
+            transform.translation = intersection.position();
         }
-
-        // println!("{:?} Dragged cursor_position: {:?}", e_drag.entity, e_drag.cursor_position);
     }
 }
 
